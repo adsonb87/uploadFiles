@@ -1,26 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFileDto } from './dto/create-file.dto';
-import { UpdateFileDto } from './dto/update-file.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { File } from './entities/file.entity';
+import { Request } from 'express';
 
 @Injectable()
 export class FilesService {
-  create(createFileDto: CreateFileDto) {
-    return 'This action adds a new file';
-  }
+  constructor(
+    @InjectRepository(File)
+    private fotoRepository: Repository<File>,
+  ) {}
+  async salvarDados(file: Express.Multer.File, req: Request) {
+    const arquivo = new File();
+    arquivo.fileName = file.filename;
+    arquivo.contentLength = file.size;
+    arquivo.contentType = file.mimetype;
+    arquivo.url = `${req.protocol}://${req.get('host')}/files/${file.filename}`;
 
-  findAll() {
-    return `This action returns all files`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} file`;
-  }
-
-  update(id: number, updateFileDto: UpdateFileDto) {
-    return `This action updates a #${id} file`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} file`;
+    return await this.fotoRepository.save(arquivo);
   }
 }
